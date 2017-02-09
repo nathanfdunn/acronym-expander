@@ -1,0 +1,22 @@
+{
+  "manifest_version": 2,
+
+  "name": "Acronym Expander",
+  "description": "This extension displays the expanded version of any acronyms it finds on the page",
+  "version": "1.0",
+
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_title": "Acronym Expander"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "permissions": [
+    "activeTab",
+    "https://ajax.googleapis.com/"
+  ]
+}
