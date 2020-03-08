@@ -1,14 +1,12 @@
-var paragraphs = [];
+var tags = ['p', 'a'];			//Elements that will be affected
 
-var tags = ['p', 'a'];
-
+var nodes = [];
 for (var i=0; i<tags.length; i++){
-	var nodes = document.querySelectorAll(tags[i]);
-	for (var j=0; j<nodes.length; j++){
-		paragraphs.push(nodes[j]);
+	var queryNodes = document.querySelectorAll(tags[i]);
+	for (var j=0; j<queryNodes.length; j++){
+		nodes.push(queryNodes[j]);
 	}
 }
-console.log('psss',paragraphs);
 
 var regex = /\b[A-Z]{2,}\b/g;
 
@@ -31,6 +29,9 @@ function extractAcronymFromDefinition(acronym, definition){
 			regex += ' ';
 		}
 	}
+	//IANAL
+	//\bI\w* A\w* N\w* A\w* L\w*
+	//Used by some to mean "I am not a lawyer"
 	regex = new RegExp(regex, 'ig');
 	var match = definition.match(regex);
 	if (!match){return definition;}			// If it didn't work, just return the whole thing.
@@ -42,32 +43,28 @@ function findAcronymDefinition(acronym, callback){
 	req.onreadystatechange = function(){
 		if (req.readyState!=4 || req.status!=200){return;}		//Mitigate duplicate request bug
 		var result = JSON.parse(req.responseText);
-		if (result.result_type != 'exact'){
-			callback('Debug: No result found');
-		} else {
+		if (result.result_type == 'exact'){
 			callback(result.list[0].definition);
+		} else {
+			callback('Debug: No result found');
 		}
-	}
+	};
 	req.open('GET', 'https://api.urbandictionary.com/v0/define?term=' + acronym, true);
 	req.send(null);
 }
 
 function innerLoop(p, acronym){
 	findAcronymDefinition(acronym, function(definition){
-		if (definition){
-			definition = extractAcronymFromDefinition(acronym, definition);
-			p.textContent = p.textContent.replace(
-				new RegExp(acronym, 'g'),
-				acronym + ' {'+definition+'}'
-			);
-		}
+		definition = extractAcronymFromDefinition(acronym, definition);
+		p.textContent = p.textContent.replace(
+			new RegExp(acronym, 'g'),
+			acronym + ' {'+definition+'}'
+		);
 	});
 }
 
-for (var i=0; i<paragraphs.length; i++){
-	var p = paragraphs[i];
-	console.log('should be 1',p);
-	console.log(p.textContent);
+for (var i=0; i<nodes.length; i++){
+	var p = nodes[i];
 	var acronyms = stripDuplicates(p.textContent.match(regex) || []);
 	for (var j=0; j<acronyms.length; j++){
 		var acronym = acronyms[j];
